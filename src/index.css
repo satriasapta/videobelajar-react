@@ -8,10 +8,12 @@ body {
 @tailwind components;
 @tailwind utilities;
 
-
+:root {
+    font-family: 'Poppins', 'DM Sans', sans-serif;
+}
 
 .card {
-    @apply ml-3 w-full flex-col gap-5 inline-flex sm:w-80;
+    @apply w-full flex-col gap-5 inline-flex sm:w-80;
 }
 
 .menu {

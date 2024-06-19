@@ -18,7 +18,7 @@ import star from '../assets/star.png'
 import promosi from '../assets/promosi.jpeg'
 const Content = () => {
     return (
-        <>
+        <div className='px-5 sm:px-16 sm:py:12'>
 
             <div className="menu">
                 <div className="flex-col justify-center items-start inline-flex">
@@ -316,7 +316,7 @@ const Content = () => {
                 </div>
             </div>
 
-            <div className="backdrop-brightness-0 w-full h-[25rem] bg-center m-4 rounded-xl flex-col justify-center items-center gap-10 inline-flex overflow-hidden" style={{ backgroundImage: `url(${promosi})` }}>
+            <div className="backdrop-brightness-0 w-full h-[25rem] bg-center my-4 rounded-xl flex-col justify-center items-center gap-10 inline-flex overflow-hidden" style={{ backgroundImage: `url(${promosi})` }}>
                 <div className='absolute inset-0 bg-black opacity-70'></div>
 
                 <div className='relative z-10 flex-col justify-center items-center inline-flex px-6'>
@@ -332,7 +332,7 @@ const Content = () => {
 
 
 
-        </>
+        </div>
     )
 }
 

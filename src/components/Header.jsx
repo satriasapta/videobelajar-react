@@ -1,7 +1,7 @@
 import sambutan from '../assets/sambutan.jpeg'
 const Header = () => {
     return (
-        <>
+        <div className='px-5 py-7 sm:px-16 sm:py:12'>
 
             <div className="backdrop-brightness-50  bg-cover  bg-center  w-full h-[25rem] rounded-xl overflow-hidden" style={{ backgroundImage: `url(${sambutan})` }}>
                 <div className='absolute inset-0 bg-black opacity-50'></div>
@@ -16,11 +16,14 @@ const Header = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col justify-center items-start gap-2.5 ">
-                <h1 className="text-2xl text-neutral-800 font-semibold">Koleksi Video Pembelajaran Unggulan</h1>
-                <p className='text-neutral-500 text-sm font-normal tracking-tight'>Jelajahi Dunia Pengetahuan Melalui Pilihan Kami!</p>
+            <div className="inline-flex items-center gap-4 mt-4">
+                <div className="flex flex-col justify-center items-start gap-2.5">
+                    <h1 className="text-2xl text-neutral-800 font-semibold">Koleksi Video Pembelajaran Unggulan</h1>
+                    <p className='text-neutral-500 text-sm font-normal tracking-tight'>Jelajahi Dunia Pengetahuan Melalui Pilihan Kami!</p>
+                </div>
+
             </div>
-        </>
+        </div>
     )
 }
 
