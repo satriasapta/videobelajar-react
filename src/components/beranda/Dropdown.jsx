@@ -1,7 +1,7 @@
-import notebook from '../assets/Notebook.svg'
-import dropdown from '../assets/arrowDown.svg'
-import harga from '../assets/harga.svg'
-import durasi from '../assets/durasi.png'
+import notebook from '../../assets/Notebook.svg'
+import dropdown from '../../assets/arrowDown.svg'
+import harga from '../../assets/harga.svg'
+import durasi from '../../assets/durasi.png'
 
 const Dropdown = () => {
     return (

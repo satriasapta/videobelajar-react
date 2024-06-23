@@ -1,9 +1,9 @@
-import logo from '../assets/logo.png'
-import right from '../assets/right.png'
-import instagram from '../assets/instagram.png'
-import facebook from '../assets/facebook.png'
-import twitter from '../assets/twitter.png'
-import linkedin from '../assets/linkedin.png'
+import logo from '../../assets/logo.png'
+import right from '../../assets/right.png'
+import instagram from '../../assets/instagram.png'
+import facebook from '../../assets/facebook.png'
+import twitter from '../../assets/twitter.png'
+import linkedin from '../../assets/linkedin.png'
 const Footer = () => {
     return (
         <div className="w-full bg-white pt-2 px-4 sm:p-8">

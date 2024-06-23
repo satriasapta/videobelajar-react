@@ -13,9 +13,13 @@ body {
 }
 
 .card {
-    @apply w-full flex-col gap-5 inline-flex sm:w-80;
+    @apply w-full flex-col my-3 mr-6 p-4 gap-5 inline-flex sm:w-80 sm:flex-row sm:flex-wrap sm:justify-start bg-white rounded-xl border border-zinc-200;
 }
 
 .menu {
-    @apply w-80 justify-start items-start inline-flex overflow-x-auto sm:w-full
+    @apply w-[90%] justify-start items-start inline-flex overflow-x-auto mb-4
+}
+
+.card-content {
+    @apply self-stretch justify-start items-start gap-3 inline-flex sm:inline-block sm:w-full
 }
