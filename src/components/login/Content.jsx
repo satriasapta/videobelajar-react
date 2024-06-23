@@ -1,8 +1,10 @@
-
+import { useNavigate } from 'react-router-dom'
 import eye from '../../assets/eye.png'
 import google from '../../assets/google.png'
+import navbar from './Navbar'
 
 const Content = () => {
+    const navigate = useNavigate()
     return (
         <div className="w-full justify-center items-center flex sm:max-w-[50rem] sm:mx-auto">
             <div className='my-8 mx-6 bg-white w-full  justify-center items-center inline-block'>
@@ -26,8 +28,16 @@ const Content = () => {
                 </div>
 
                 <div className="w-full px-4 pt-4 sm:px-10 gap-6 block">
-                    <button className='bg-green-500 text-white font-dm-sans rounded-lg w-full py-2'>Masuk</button>
-                    <button className='mt-4 bg-green-100 text-green-500 font-dm-sans rounded-lg w-full py-2'>Daftar</button>
+                    <button
+                        onClick={() =>
+                            navigate('/')
+                        }
+                        className='bg-green-500 text-white font-semibold font-dm-sans rounded-lg w-full py-2'>Masuk</button>
+                    <button
+                        onClick={() =>
+                            navigate('/register')
+                        }
+                        className='mt-4 bg-green-100 text-green-500 font-semibold font-dm-sans rounded-lg w-full py-2'>Daftar</button>
                     <div className="flex items-center justify-center my-4">
                         <div className="flex-grow border-t border-gray-300"></div>
                         <span className="mx-4 text-gray-500">atau</span>
