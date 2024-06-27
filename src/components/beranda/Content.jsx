@@ -342,8 +342,8 @@ const Content = () => {
                     <h5 className="self-stretch text-center text-white text-2xl font-semibold font-poppins leading-relaxed">Mau Belajar Lebih Banyak?</h5>
                     <p className='self-stretch text-center text-gray-200 font-dm-sans'>Daftarkan dirimu untuk mendapatkan informasi terbaru dan penawaran spesial dari program-program terbaik harisenin.com</p>
                     <div className="mt-4 w-full bg-white rounded-xl p-3 sm:inline-flex">
-                        <input className='text-center w-full font-poppins' type="text" placeholder='Masukkan Emailmu' />
-                        <button className="hidden sm:block w-40 bg-yellow-400 rounded-xl p-2 text-white font-poppins">Subscribe</button>
+                        <input className='text-center w-full font-poppins outline-none' type="text" placeholder='Masukkan Emailmu' />
+                        <button className="hidden sm:block w-40 bg-yellow-500 rounded-xl p-2 text-white font-poppins hover:bg-yellow-600">Subscribe</button>
                     </div>
                     <button className="mt-4 w-full bg-yellow-400 rounded-xl p-3 text-white font-poppins sm:hidden">Subscribe</button>
                 </div>

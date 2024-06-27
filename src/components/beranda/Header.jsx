@@ -9,9 +9,9 @@ const Header = () => {
                     <h2 className="self-stretch text-center text-white text-2xl font-bold  font-poppins sm:text-4xl lg:text-5xl lg:px-20 xl:px-44 xl:6xl  "> Revolusi Pembelajaran: Temukan Ilmu Baru melalui Platform Video Interaktif!</h2>
                     <p className="text-center text-white text-sm font-medium font-dm-sans leading-tight tracking-tight sm:text-base lg:text-xl lg:px-20 xl:px-44">Temukan ilmu baru yang menarik dan mendalam melalui koleksi video pembelajaran berkualitas tinggi. Tidak hanya itu, Anda juga dapat berpartisipasi dalam latihan interaktif yang akan meningkatkan pemahaman Anda.</p>
 
-                    <div className='mt-4 px-3 h-10 bg-green-500 rounded-[10px] flex-col justify-center items-center inline-flex'>
+                    <div className='mt-4 px-3 h-10 bg-green-500 rounded-[10px] flex-col justify-center items-center inline-flex hover:bg-green-600'>
                         <div className="px-2 py-2.5 flex-col justify-start items-start gap-2 flex">
-                            <p className="text-white text-sm font-normal font-dm-sans leading-tight tracking-tight sm:text-base">Temukan Video Course untuk Dipelajari!</p>
+                            <button className="text-white text-sm font-normal font-dm-sans leading-tight tracking-tight sm:text-base">Temukan Video Course untuk Dipelajari!</button>
                         </div>
                     </div>
                 </div>
