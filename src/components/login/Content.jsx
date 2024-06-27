@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import eye from '../../assets/eye.png'
 import google from '../../assets/google.png'
-import navbar from './Navbar'
 
 const Content = () => {
     const navigate = useNavigate()
@@ -15,13 +14,13 @@ const Content = () => {
                 <div className="w-full px-4 pt-4 sm:px-10">
                     <p className='font-dm-sans text-sm font-normal'>E-Mail <span className='text-red-500'>*</span></p>
                     <div className="flex justify-between w-full bg-white border border-gray-300 rounded-lg p-2">
-                        <input type="email" name="" id="" placeholder='Masukkan Email' className='w-full' />
+                        <input type="email" name="email" id="email" placeholder='Masukkan Email' className='w-full' />
                     </div>
                 </div>
                 <div className="w-full px-4 pt-4 sm:px-10">
                     <p className='font-dm-sans text-sm font-normal'>Kata Sandi <span className='text-red-500'>*</span></p>
                     <div className="flex justify-between w-full bg-white border border-gray-300 rounded-lg p-2">
-                        <input type="password" name="" id="" placeholder='Masukkan Password' className='w-full' />
+                        <input type="password" name="password" id="password" placeholder='Masukkan Password' className='w-full' />
                         <img src={eye} alt="" />
                     </div>
                     <h4 className='text-end mt-4 text-gray-700'>Lupa Password?</h4>

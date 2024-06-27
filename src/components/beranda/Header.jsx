@@ -1,8 +1,9 @@
 import sambutan from '../../assets/sambutan.jpeg'
+import '../../../src/index.css'
 const Header = () => {
     return (
         <div className='px-5 py-7 sm:px-16 sm:py:12'>
-            <div className="backdrop-brightness-50  bg-cover  bg-center  w-full h-[25rem] rounded-xl overflow-hidden sm:items-center" style={{ backgroundImage: `url(${sambutan})` }}>
+            <div className="backdrop-brightness-50  bg-cover  bg-center  w-full h-[25rem] rounded-xl overflow-hidden sm:items-center mt-16" style={{ backgroundImage: `url(${sambutan})` }}>
                 <div className='absolute inset-0 bg-black opacity-50'></div>
                 <div className=" relative z-10 mt-8 px-5 flex-col items-center gap-3 inline-flex w-full sm:mt-12">
                     <h2 className="self-stretch text-center text-white text-2xl font-bold  font-poppins sm:text-4xl lg:text-5xl lg:px-20 xl:px-44 xl:6xl  "> Revolusi Pembelajaran: Temukan Ilmu Baru melalui Platform Video Interaktif!</h2>

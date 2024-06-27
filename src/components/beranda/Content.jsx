@@ -55,7 +55,7 @@ const Content = () => {
                 </div>
             </div>
 
-            <div className="sm:w-full sm:inline-flex sm:justify-start sm:items-start sm:flex-wrap">
+            <div className="sm:w-full sm:inline-flex sm:justify-evenly sm:items-start sm:flex-wrap">
                 <div className="card">
                     <div className="card-content">
                         <img src={content1} className='bg-cover bg-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt="" />
