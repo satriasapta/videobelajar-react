@@ -15,7 +15,6 @@ const Navbar = () => {
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target) && imgRef.current && !imgRef.current.contains(e.target)) {
-                console.log("outside");
                 setOpen(false);
             }
         };
@@ -49,7 +48,6 @@ const Navbar = () => {
                         alt=""
                         ref={imgRef}
                         onClick={() => {
-                            console.log("Hamburger clicked");
                             setOpen(!open);
                         }}
                     />
