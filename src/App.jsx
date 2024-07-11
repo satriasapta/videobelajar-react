@@ -3,6 +3,7 @@ import Beranda from "./pages/beranda.jsx"
 import Login from "./pages/login.jsx"
 import Register from "./pages/register.jsx"
 import './index.css'
+import CourseContextProvider from "./contexts/CourseContext.jsx"
 function App() {
   const router = createBrowserRouter([
     {
@@ -19,8 +20,9 @@ function App() {
     }
   ])
   return (
-
-    <RouterProvider router={router} />
+    <CourseContextProvider>
+      <RouterProvider router={router} />
+    </CourseContextProvider>
   )
 }
 

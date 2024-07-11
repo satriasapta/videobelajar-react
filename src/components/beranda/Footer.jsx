@@ -10,7 +10,7 @@ const Footer = () => {
             <div className='sm:inline-flex sm:justify-between sm: w-full'>
                 <div className="sm:inline-block">
                     <img src={logo} alt="" />
-                    <h2 className='text-l font-poppins font-bold mt-2 sm: mt-8'>Gali Potensi Anda Melalui Pembelajaran Video di hariesok.id!</h2>
+                    <h2 className='text-l font-poppins font-bold mt-4'>Gali Potensi Anda Melalui Pembelajaran Video di hariesok.id!</h2>
                     <p className='text-sm font-light text-gray-600 font-dm-sans pt-2 '>Jl. Usman Effendi No. 50 Lowokwaru, Malang</p>
                     <p className='text-sm font-light text-gray-600 font-dm-sans pt-2'>+62-877-7123-1234</p>
                 </div>
