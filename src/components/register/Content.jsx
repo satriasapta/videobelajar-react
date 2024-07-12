@@ -7,7 +7,7 @@ const Content = () => {
     const navigate = useNavigate()
     return (
         <div className="w-full justify-center items-center flex sm:max-w-[50rem] sm:mx-auto">
-            <div className='my-8 mx-6 bg-white w-full  justify-center items-center inline-block'>
+            <div className='my-8 mx-6 bg-white w-full  justify-center items-center inline-block mt-28'>
                 <div className="w-full inline-block">
                     <h2 className="text-2xl text-neutral-800 font-semibold font-poppins mt-8 text-center">Pendaftaran Akun</h2>
                     <p className='text-gray-400 text-sm font-normal text-center pt-1'>Yuk, daftarkan akunmu sekarang juga!</p>

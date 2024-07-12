@@ -1,9 +1,9 @@
 import Content from '../components/register/Content.jsx'
-import Navbar from '../components/register/Navbar.jsx'
+import Navbar from '../components/Navbar.jsx'
 const register = () => {
     return (
         <div className="bg-background">
-            <Navbar />
+            <Navbar isLoggedIn={false} />
             <Content />
         </div>
     )
