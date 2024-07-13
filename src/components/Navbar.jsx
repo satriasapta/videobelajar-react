@@ -36,11 +36,17 @@ const Navbar = ({ isLoggedIn }) => {
             navigate("/login");
         }
     };
+    const klikKursus = () => {
+        navigate("/kursus");
+    }
+    const klikLogo = () => {
+        navigate("/")
+    }
 
     return (
         <nav className='w-full flex items-center h-[4.5rem] justify-between shadow border-t border-b border-zinc-100 bg-white fixed z-20'>
             <div className="mx-6 sm:mx-16 flex justify-between items-center w-full relative">
-                <img src={logo} alt="" />
+                <img src={logo} alt="" onClick={klikLogo} />
                 {
                     isLoggedIn ? (
                         <>
@@ -55,7 +61,7 @@ const Navbar = ({ isLoggedIn }) => {
                                 />
                             </div>
                             <div className="hidden sm:inline-flex gap-10 items-center font-normal text-gray-600">
-                                <h5 className='font-dm-sans'>Kategori</h5>
+                                <button onClick={klikKursus}><h5 className='font-dm-sans'>Kelola Kursus</h5></button>
                                 <img
                                     ref={imgRef}
                                     onClick={() => setOpen(!open)}

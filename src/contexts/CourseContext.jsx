@@ -34,10 +34,14 @@ const CourseContextProvider = (props) => {
         { id: uuidv4(), title: "Big 4 Auditor Financial Analyst", description: "Mulai transformasi dengan instruktur profesional, harga yang terjangkau, dan  kurikulum terbaik", instructor: "Jenna Ortega", price: "Rp 300K", company: "Gojek", rating: 3.5, image: content9, avatar: avatar9 },
     ])
 
+    const tambahKelas = (title, description, instructor, price, company, rating, image, avatar) => {
+        setCourses([...courses, { id: uuidv4(), title, description, instructor, price, company, rating, image, avatar }]);
+    };
+
     return (
-        <CourseContext.Provider value={[courses, setCourses]}>
+        <CourseContext.Provider value={{ courses, setCourses, tambahKelas }}>
             {props.children}
-        </CourseContext.Provider>
+        </CourseContext.Provider >
     )
 }
 

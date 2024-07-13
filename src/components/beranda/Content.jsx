@@ -3,7 +3,7 @@ import { CourseContext } from '../../contexts/CourseContext'
 import Rating from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
 const Content = () => {
-    const [courses] = useContext(CourseContext)
+    const { courses } = useContext(CourseContext)
 
     return (
         <div className='px-5 sm:px-16 sm:py-12'>
@@ -39,7 +39,7 @@ const Content = () => {
                         </div>
                         <div className="w-full justify-between items-center inline-flex">
                             <Rating rating={course.rating} />
-                            <p className="text-green-500 text-xl font-semibold font-poppins leading-normal">Rp 300K</p>
+                            <p className="text-green-500 text-xl font-semibold font-poppins leading-normal">{course.price}</p>
                         </div>
                     </div>
                 ))}
