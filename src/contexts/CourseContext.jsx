@@ -38,8 +38,16 @@ const CourseContextProvider = (props) => {
         setCourses([...courses, { id: uuidv4(), title, description, instructor, price, company, rating, image, avatar }]);
     };
 
+    const editKelas = (id, editkelas) => {
+        setCourses(courses.map((course) => course.id === id ? editkelas : course))
+    }
+
+    const hapusKelas = (id) => {
+        setCourses(courses.filter((course) => course.id !== id))
+    }
+
     return (
-        <CourseContext.Provider value={{ courses, setCourses, tambahKelas }}>
+        <CourseContext.Provider value={{ courses, setCourses, tambahKelas, editKelas, hapusKelas }}>
             {props.children}
         </CourseContext.Provider >
     )

@@ -1,12 +1,21 @@
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { CourseContext } from "../../contexts/CourseContext"
 
-const TambahKursus = ({ showModal, handleCloseModal }) => {
-    const { tambahKelas } = useContext(CourseContext)
+const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
+    const { tambahKelas, editKelas } = useContext(CourseContext)
     const [kursusBaru, setKursusBaru] = useState({
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
     })
 
+    useEffect(() => {
+        if (updateKelas) {
+            setKursusBaru(updateKelas);
+        } else {
+            setKursusBaru({
+                title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
+            });
+        }
+    }, [updateKelas]);
     const handleChange = (e) => {
         setKursusBaru({ ...kursusBaru, [e.target.name]: e.target.value })
     }
@@ -15,16 +24,20 @@ const TambahKursus = ({ showModal, handleCloseModal }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        tambahKelas(title, description, instructor, price, company, rating, image, avatar)
+        if (updateKelas) {
+            editKelas(updateKelas.id, kursusBaru)
+        } else {
+            tambahKelas(title, description, instructor, price, company, rating, image, avatar)
+        }
         handleCloseModal()
     }
     if (!showModal) return null
     return (
         <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
-                <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2">
+            <div className="fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
+                <div className="bg-white rounded-lg shadow-lg w-11/12 max-h-screen md:w-2/3 lg:w-1/2 overflow-y-auto">
                     <div className="flex justify-between items-center border-b p-4">
-                        <h5 className="text-xl font-medium">Tambah Kursus</h5>
+                        <h5 className="text-xl font-medium">{updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}</h5>
                         <button className="text-black" onClick={handleCloseModal}>
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -114,7 +127,7 @@ const TambahKursus = ({ showModal, handleCloseModal }) => {
                                 className="mt-1 p-2 w-full border rounded-lg" placeholder="Gambar" />
                         </div>
                         <div className="flex justify-end gap-4">
-                            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Tambah Kursus</button>
+                            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">{updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}</button>
                             <button type="button" onClick={handleCloseModal} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Tutup</button>
                         </div>
                     </form>
@@ -124,4 +137,4 @@ const TambahKursus = ({ showModal, handleCloseModal }) => {
     )
 }
 
-export default TambahKursus
+export default KelolaKursus

@@ -1,18 +1,27 @@
-import { useContext, useState } from 'react'
-import { CourseContext } from '../../contexts/CourseContext'
-import TambahKursus from './TambahKursus'
+import { useContext, useState } from 'react';
+import { CourseContext } from '../../contexts/CourseContext';
+import TambahKursus from './KelolaKursus';
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
+    const [updateKelas, setUpdateKelas] = useState(null);
+
     const handleCloseModal = () => {
         setShowModal(false);
-    }
+        setUpdateKelas(null);
+    };
 
     const handleAddCourseClick = () => {
         setShowModal(true);
     };
 
-    const { courses } = useContext(CourseContext)
+    const handleEditCourseClick = (course) => {
+        setUpdateKelas(course);
+        setShowModal(true);
+    };
+
+    const { courses, hapusKelas } = useContext(CourseContext);
+
     return (
         <>
             <div className='px-5 py-7 sm:px-16 sm:py:12'>
@@ -32,7 +41,8 @@ const Content = () => {
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    No                                </th>
+                                    No
+                                </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Gambar
                                 </th>
@@ -44,6 +54,9 @@ const Content = () => {
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Pengajar
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Foto Pengajar
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Rating
@@ -63,7 +76,7 @@ const Content = () => {
                                         <div className="text-sm text-gray-900">{index + 1}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap w-52">
-                                        <img src={course.image} className='max-h-28 w-full object-cover object-center'></img>
+                                        <img src={course.image} className='max-h-28 w-full object-cover object-center' alt="course"></img>
                                     </td>
                                     <td className="px-6 py-4 min-w-40 max-w-xs break-words">
                                         <div className="text-sm text-gray-900">{course.title}</div>
@@ -75,25 +88,30 @@ const Content = () => {
                                         <div className="text-sm text-gray-900">{course.instructor}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
+                                        <img src={course.avatar} className='max-h-28 w-full object-cover object-center' alt="course"></img>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{course.rating}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{course.price}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{course.action}</div>
+                                    <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
+                                        <button
+                                            onClick={() => handleEditCourseClick(course)}
+                                            className='bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600'>Edit</button>
+                                        <button
+                                            onClick={() => hapusKelas(course.id)} className='bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600'>Delete</button>
                                     </td>
                                 </tr>
                             ))}
-
                         </tbody>
                     </table>
                 </div>
-
             </div>
-            <TambahKursus showModal={showModal} handleCloseModal={handleCloseModal} />
+            <TambahKursus showModal={showModal} handleCloseModal={handleCloseModal} updateKelas={updateKelas} />
         </>
-    )
-}
+    );
+};
 
-export default Content
+export default Content;

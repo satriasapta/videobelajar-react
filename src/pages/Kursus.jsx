@@ -1,7 +1,7 @@
 import Navbar from '../components/Navbar.jsx';
 import Content from '../components/kursus/Content.jsx';
 
-const TambahKursus = () => {
+const Kursus = () => {
 
     return (
         <div className="bg-background">
@@ -11,4 +11,4 @@ const TambahKursus = () => {
     )
 }
 
-export default TambahKursus
+export default Kursus
