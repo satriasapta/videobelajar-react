@@ -17,15 +17,23 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
         }
     }, [updateKelas]);
     const handleChange = (e) => {
-        setKursusBaru({ ...kursusBaru, [e.target.name]: e.target.value })
+        const { name, files, value } = e.target
+        if (files) {
+            setKursusBaru({ ...kursusBaru, [name]: files[0] })
+        } else {
+            setKursusBaru({ ...kursusBaru, [name]: value })
+        }
     }
 
     const { title, description, instructor, price, company, rating, image, avatar } = kursusBaru
 
     const handleSubmit = (e) => {
         e.preventDefault()
+        const updatedKursusBaru = { ...kursusBaru }
         if (updateKelas) {
-            editKelas(updateKelas.id, kursusBaru)
+            if (!updatedKursusBaru.image) updatedKursusBaru.image = updateKelas.image
+            if (!updatedKursusBaru.avatar) updatedKursusBaru.avatar = updateKelas.avatar
+            editKelas(updateKelas.id, updatedKursusBaru)
         } else {
             tambahKelas(title, description, instructor, price, company, rating, image, avatar)
         }
@@ -109,20 +117,18 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
                         <div className="mb-4">
                             <label htmlFor="image" className="block text-gray-700">Gambar</label>
                             <input
-                                type="text"
+                                type="file"
                                 name="image"
                                 id="image"
-                                value={image}
                                 onChange={handleChange}
                                 className="mt-1 p-2 w-full border rounded-lg" placeholder="Gambar" />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="avatar" className="block text-gray-700">Foto Pengajar</label>
                             <input
-                                type="text"
+                                type="file"
                                 name="avatar"
                                 id="avatar"
-                                value={avatar}
                                 onChange={handleChange}
                                 className="mt-1 p-2 w-full border rounded-lg" placeholder="Gambar" />
                         </div>

@@ -35,11 +35,15 @@ const CourseContextProvider = (props) => {
     ])
 
     const tambahKelas = (title, description, instructor, price, company, rating, image, avatar) => {
-        setCourses([...courses, { id: uuidv4(), title, description, instructor, price, company, rating, image, avatar }]);
+        setCourses([...courses, { id: uuidv4(), title, description, instructor, price, company, rating, image: URL.createObjectURL(image), avatar: URL.createObjectURL(avatar) }]);
     };
 
     const editKelas = (id, editkelas) => {
-        setCourses(courses.map((course) => course.id === id ? editkelas : course))
+        setCourses(courses.map((course) => course.id === id ? {
+            ...editkelas,
+            image: editkelas.image instanceof File ? URL.createObjectURL(editkelas.image) : editkelas.image,
+            avatar: editkelas.avatar instanceof File ? URL.createObjectURL(editkelas.avatar) : editkelas.avatar
+        } : course))
     }
 
     const hapusKelas = (id) => {
