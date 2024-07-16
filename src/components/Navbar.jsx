@@ -46,7 +46,7 @@ const Navbar = ({ isLoggedIn }) => {
     return (
         <nav className='w-full flex items-center h-[4.5rem] justify-between shadow border-t border-b border-zinc-100 bg-white fixed z-20'>
             <div className="mx-6 sm:mx-16 flex justify-between items-center w-full relative">
-                <img src={logo} alt="" onClick={klikLogo} />
+                <img src={logo} alt="" onClick={klikLogo} className="cursor-pointer" />
                 {
                     isLoggedIn ? (
                         <>
