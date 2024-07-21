@@ -1,9 +1,9 @@
-import { useContext } from 'react'
-import { CourseContext } from '../../contexts/CourseContext'
+
+import useCourseStore from '../../contexts/CourseContext'
 import Rating from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
 const Content = () => {
-    const { courses } = useContext(CourseContext)
+    const { courses } = useCourseStore()
 
     return (
         <div className='px-5 sm:px-16 sm:py-12'>

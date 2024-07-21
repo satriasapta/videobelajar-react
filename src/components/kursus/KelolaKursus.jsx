@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from "react"
-import { CourseContext } from "../../contexts/CourseContext"
+import { useEffect, useState } from "react"
+import useCourseStore from "../../contexts/CourseContext"
 
 const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
-    const { tambahKelas, editKelas } = useContext(CourseContext)
+    const { tambahKelas, editKelas } = useCourseStore();
     const [kursusBaru, setKursusBaru] = useState({
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
     })

@@ -1,5 +1,5 @@
-import { useContext, useState } from 'react';
-import { CourseContext } from '../../contexts/CourseContext';
+import { useState } from 'react';
+import useCourseStore from '../../contexts/CourseContext';
 import TambahKursus from './KelolaKursus';
 
 const Content = () => {
@@ -20,7 +20,7 @@ const Content = () => {
         setShowModal(true);
     };
 
-    const { courses, hapusKelas } = useContext(CourseContext);
+    const { courses, hapusKelas } = useCourseStore();
 
     return (
         <>
