@@ -1,8 +1,12 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react"
-import useCourseStore from "../../contexts/CourseContext"
+import { v4 as uuidv4 } from 'uuid';
+import { doc, setDoc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, storage } from '../../firebase'
 
 const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
-    const { tambahKelas, editKelas } = useCourseStore();
+    const [per, setPerc] = useState(null)
     const [kursusBaru, setKursusBaru] = useState({
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
     })
@@ -16,6 +20,42 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
             });
         }
     }, [updateKelas]);
+
+    useEffect(() => {
+        const uploadFile = (file, field) => {
+            const fileName = new Date().getTime() + file.name;
+            const storageRef = ref(storage, fileName);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            uploadTask.on('state_changed', (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log(`Upload ${field} is ${progress}% done`);
+                setPerc(progress);
+                switch (snapshot.state) {
+                    case 'paused':
+                        console.log(`Upload ${field} is paused`);
+                        break;
+                    case 'running':
+                        console.log(`Upload ${field} is running`);
+                        break;
+                    default:
+                        break;
+                }
+            }, (error) => {
+                console.error(`Error uploading ${field}:`, error);
+            }, () => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    setKursusBaru((prev) => ({ ...prev, [field]: downloadURL }));
+                });
+            });
+        };
+        if (kursusBaru.image && typeof kursusBaru.image !== 'string') {
+            uploadFile(kursusBaru.image, 'image');
+        }
+        if (kursusBaru.avatar && typeof kursusBaru.avatar !== 'string') {
+            uploadFile(kursusBaru.avatar, 'avatar');
+        }
+    }, [kursusBaru.image, kursusBaru.avatar]);
+
     const handleChange = (e) => {
         const { name, files, value } = e.target
         if (files) {
@@ -24,21 +64,21 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
             setKursusBaru({ ...kursusBaru, [name]: value })
         }
     }
+    console.log(kursusBaru)
 
-    const { title, description, instructor, price, company, rating, image, avatar } = kursusBaru
+    const { title, description, instructor, price, company, rating } = kursusBaru
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        const updatedKursusBaru = { ...kursusBaru }
-        if (updateKelas) {
-            if (!updatedKursusBaru.image) updatedKursusBaru.image = updateKelas.image
-            if (!updatedKursusBaru.avatar) updatedKursusBaru.avatar = updateKelas.avatar
-            editKelas(updateKelas.id, updatedKursusBaru)
-        } else {
-            tambahKelas(title, description, instructor, price, company, rating, image, avatar)
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const kursusId = updateKelas ? updateKelas.id : uuidv4();
+            await setDoc(doc(db, "kursus", kursusId), kursusBaru);
+            console.log("Document written with ID: ", kursusId);
+        } catch (err) {
+            console.error("Error setting document: ", err);
         }
-        handleCloseModal()
-    }
+        handleCloseModal();
+    };
     if (!showModal) return null
     return (
         <>
@@ -133,7 +173,7 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
                                 className="mt-1 p-2 w-full border rounded-lg" placeholder="Gambar" />
                         </div>
                         <div className="flex justify-end gap-4">
-                            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">{updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}</button>
+                            <button disabled={per !== null && per < 100} type="submit" className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-green-300">{updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}</button>
                             <button type="button" onClick={handleCloseModal} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Tutup</button>
                         </div>
                     </form>
