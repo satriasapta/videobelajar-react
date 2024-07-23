@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBWVZxMvh1cOjUz00QjzwdZYaqsFqWHAS8",
-    authDomain: "videobelajar-de384.firebaseapp.com",
-    projectId: "videobelajar-de384",
-    storageBucket: "videobelajar-de384.appspot.com",
-    messagingSenderId: "240429515112",
-    appId: "1:240429515112:web:22951bdaf57cf9478216dd"
+    apiKey: import.meta.env.VITE_REACT_APP_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_REACT_APP_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_REACT_APP_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_REACT_APP_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_REACT_APP_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_REACT_APP_APP_ID
 };
 
 // Initialize Firebase

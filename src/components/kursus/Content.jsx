@@ -1,10 +1,33 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useCourseStore from '../../contexts/CourseContext';
 import TambahKursus from './KelolaKursus';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from '../../firebase';
+
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
     const [updateKelas, setUpdateKelas] = useState(null);
+    const [data, setData] = useState([]);
+    const { hapusKelas } = useCourseStore();
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            let courses = [];
+            try {
+                const querySnapshot = await getDocs(collection(db, "kursus"));
+                querySnapshot.forEach((doc) => {
+                    courses.push({ ...doc.data(), id: doc.id });
+                });
+                setData(courses);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchCourses();
+    }, []);
+
+    console.log(data)
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -20,7 +43,6 @@ const Content = () => {
         setShowModal(true);
     };
 
-    const { courses, hapusKelas } = useCourseStore();
 
     return (
         <>
@@ -70,7 +92,7 @@ const Content = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {courses.map((course, index) => (
+                            {data.map((course, index) => (
                                 <tr key={course.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{index + 1}</div>
