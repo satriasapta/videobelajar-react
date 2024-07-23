@@ -1,9 +1,26 @@
-
-import useCourseStore from '../../contexts/CourseContext'
 import Rating from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
+import { useEffect, useState } from 'react'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../../firebase'
 const Content = () => {
-    const { courses } = useCourseStore()
+    const [data, setData] = useState([])
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            let courses = [];
+            try {
+                const querySnapshot = await getDocs(collection(db, "kursus"));
+                querySnapshot.forEach((doc) => {
+                    courses.push({ ...doc.data(), id: doc.id });
+                });
+                setData(courses);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchCourses();
+    }, []);
 
     return (
         <div className='px-5 sm:px-16 sm:py-12'>
@@ -19,7 +36,7 @@ const Content = () => {
             </div>
 
             <div className="sm:w-full sm:inline-flex sm:justify-evenly sm:items-start sm:flex-wrap">
-                {courses.map((course, index) => (
+                {data.map((course, index) => (
                     <div key={course.id} className="card mb-6 sm:mb-0">
                         <div className="card-content">
                             <img src={course.image} className='bg-cover bg-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />

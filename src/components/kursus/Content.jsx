@@ -27,8 +27,6 @@ const Content = () => {
         fetchCourses();
     }, []);
 
-    console.log(data)
-
     const handleCloseModal = () => {
         setShowModal(false);
         setUpdateKelas(null);
