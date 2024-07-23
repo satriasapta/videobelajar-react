@@ -1,25 +1,25 @@
 import Rating from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
 import { useEffect, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from '../../firebase'
 const Content = () => {
     const [data, setData] = useState([])
 
     useEffect(() => {
-        const fetchCourses = async () => {
+        const fetchCourses = onSnapshot(collection(db, "kursus"), (snapshot) => {
             let courses = [];
-            try {
-                const querySnapshot = await getDocs(collection(db, "kursus"));
-                querySnapshot.forEach((doc) => {
-                    courses.push({ ...doc.data(), id: doc.id });
-                });
-                setData(courses);
-            } catch (error) {
-                console.log(error);
-            }
-        };
-        fetchCourses();
+            snapshot.docs.forEach((doc) => {
+                courses.push({ ...doc.data(), id: doc.id });
+            });
+            setData(courses);
+        }, (error) => {
+            console.log(error);
+        }
+        )
+        return () => {
+            fetchCourses();
+        }
     }, []);
 
     return (

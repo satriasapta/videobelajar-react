@@ -1,30 +1,29 @@
 import { useEffect, useState } from 'react';
-import useCourseStore from '../../contexts/CourseContext';
 import TambahKursus from './KelolaKursus';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { db } from '../../firebase';
-
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
     const [updateKelas, setUpdateKelas] = useState(null);
     const [data, setData] = useState([]);
-    const { hapusKelas } = useCourseStore();
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
 
     useEffect(() => {
-        const fetchCourses = async () => {
+        const fetchCourses = onSnapshot(collection(db, "kursus"), (snapshot) => {
             let courses = [];
-            try {
-                const querySnapshot = await getDocs(collection(db, "kursus"));
-                querySnapshot.forEach((doc) => {
-                    courses.push({ ...doc.data(), id: doc.id });
-                });
-                setData(courses);
-            } catch (error) {
-                console.log(error);
-            }
-        };
-        fetchCourses();
+            snapshot.docs.forEach((doc) => {
+                courses.push({ ...doc.data(), id: doc.id });
+            });
+            setData(courses);
+        }, (error) => {
+            console.log(error);
+        }
+        )
+        return () => {
+            fetchCourses();
+        }
     }, []);
 
     const handleCloseModal = () => {
@@ -41,12 +40,36 @@ const Content = () => {
         setShowModal(true);
     };
 
+    const handleDelete = async (id) => {
+        try {
+            await deleteDoc(doc(db, "kursus", id));
+            setData(data.filter((course) => course.id !== id));
+            showAlertMessage('Kursus berhasil dihapus');
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const showAlertMessage = (message) => {
+        setAlertMessage(message);
+        setShowAlert(true);
+        setTimeout(() => {
+            setShowAlert(false);
+        }, 3000);
+    }
 
     return (
         <>
-            <div className='px-5 py-7 sm:px-16 sm:py:12'>
+
+            <div className='px-5 py-7 sm:px-16 sm:py-12'>
                 <div className="">
-                    <div className="flex justify-between items-center mb-4 mt-16">
+                    {showAlert && (
+                        <div className="bg-green-400 text-white text-center py-2 mb-4 rounded-md mt-12">
+                            {alertMessage}
+                        </div>
+                    )}
+                    <div className="flex justify-between items-center mb-4 mt-10">
+
                         <h1 className="text-2xl font-bold">List Kursus</h1>
                         <button
                             onClick={handleAddCourseClick}
@@ -56,6 +79,7 @@ const Content = () => {
                         </button>
                     </div>
                 </div>
+
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -121,7 +145,7 @@ const Content = () => {
                                             onClick={() => handleEditCourseClick(course)}
                                             className='bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600'>Edit</button>
                                         <button
-                                            onClick={() => hapusKelas(course.id)} className='bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600'>Delete</button>
+                                            onClick={() => handleDelete(course.id)} className='bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600'>Delete</button>
                                     </td>
                                 </tr>
                             ))}
