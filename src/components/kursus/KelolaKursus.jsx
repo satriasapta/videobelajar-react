@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { doc, setDoc } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from '../../firebase'
 
 const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessage }) => {
@@ -10,14 +10,17 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
     const [kursusBaru, setKursusBaru] = useState({
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
     })
+    const [oldFiles, setOldFiles] = useState({ image: "", avatar: "" })
 
     useEffect(() => {
         if (updateKelas) {
             setKursusBaru(updateKelas);
+            setOldFiles({ image: updateKelas.image, avatar: updateKelas.avatar });
         } else {
             setKursusBaru({
                 title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
             });
+            setOldFiles({ image: "", avatar: "" });
         }
     }, [updateKelas]);
 
@@ -30,16 +33,6 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 console.log(`Upload ${field} is ${progress}% done`);
                 setPerc(progress);
-                switch (snapshot.state) {
-                    case 'paused':
-                        console.log(`Upload ${field} is paused`);
-                        break;
-                    case 'running':
-                        console.log(`Upload ${field} is running`);
-                        break;
-                    default:
-                        break;
-                }
             }, (error) => {
                 console.error(`Error uploading ${field}:`, error);
             }, () => {
@@ -67,16 +60,43 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
 
     const { title, description, instructor, price, company, rating } = kursusBaru
 
+    const deleteOldFile = async (url) => {
+        if (url) {
+            const storageRef = ref(storage, url);
+            try {
+                await deleteObject(storageRef);
+                console.log(`File ${url} deleted successfully`);
+            } catch (error) {
+                console.error(`Error deleting file ${url}:`, error);
+            }
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (typeof kursusBaru.image === 'object' || typeof kursusBaru.avatar === 'object') {
-            alert('Tunggu hingga proses upload selesai')
-            return
+            alert('Tunggu hingga proses upload selesai');
+            return;
         }
+
         try {
             const kursusId = updateKelas ? updateKelas.id : uuidv4();
-            await setDoc(doc(db, "kursus", kursusId), kursusBaru);
-            showAlertMessage(updateKelas ? 'Kursus Berhasil Diperbarui' : 'Kursus Berhasil Ditambahkan')
+            const kursusRef = doc(db, "kursus", kursusId);
+
+            let updatedKursus = { ...kursusBaru };
+
+            if (updateKelas) {
+                if (kursusBaru.image !== oldFiles.image) {
+                    await deleteOldFile(oldFiles.image);
+                }
+                if (kursusBaru.avatar !== oldFiles.avatar) {
+                    await deleteOldFile(oldFiles.avatar);
+                }
+            }
+
+            await setDoc(kursusRef, updatedKursus);
+            showAlertMessage(updateKelas ? 'Kursus Berhasil Diperbarui' : 'Kursus Berhasil Ditambahkan');
         } catch (err) {
             console.error("Error setting document: ", err);
         }
