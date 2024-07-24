@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import TambahKursus from './KelolaKursus';
 import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
-import { db } from '../../firebase';
+import { ref, deleteObject } from 'firebase/storage';
+import { db, storage } from '../../firebase';
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
@@ -42,6 +43,13 @@ const Content = () => {
 
     const handleDelete = async (id) => {
         try {
+            const courseToDelete = data.find((course) => course.id === id)
+            if (courseToDelete) {
+                const imageRef = ref(storage, courseToDelete.image);
+                const avatarRef = ref(storage, courseToDelete.avatar);
+                await deleteObject(imageRef);
+                await deleteObject(avatarRef);
+            }
             await deleteDoc(doc(db, "kursus", id));
             setData(data.filter((course) => course.id !== id));
             showAlertMessage('Kursus berhasil dihapus');
@@ -153,7 +161,7 @@ const Content = () => {
                     </table>
                 </div>
             </div>
-            <TambahKursus showModal={showModal} handleCloseModal={handleCloseModal} updateKelas={updateKelas} />
+            <TambahKursus showModal={showModal} handleCloseModal={handleCloseModal} updateKelas={updateKelas} showAlertMessage={showAlertMessage} />
         </>
     );
 };

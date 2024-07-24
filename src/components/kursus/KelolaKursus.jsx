@@ -5,7 +5,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from '../../firebase'
 
-const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
+const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessage }) => {
     const [per, setPerc] = useState(null)
     const [kursusBaru, setKursusBaru] = useState({
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
@@ -64,16 +64,19 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas }) => {
             setKursusBaru({ ...kursusBaru, [name]: value })
         }
     }
-    console.log(kursusBaru)
 
     const { title, description, instructor, price, company, rating } = kursusBaru
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (typeof kursusBaru.image === 'object' || typeof kursusBaru.avatar === 'object') {
+            alert('Tunggu hingga proses upload selesai')
+            return
+        }
         try {
             const kursusId = updateKelas ? updateKelas.id : uuidv4();
             await setDoc(doc(db, "kursus", kursusId), kursusBaru);
-            console.log("Document written with ID: ", kursusId);
+            showAlertMessage(updateKelas ? 'Kursus Berhasil Diperbarui' : 'Kursus Berhasil Ditambahkan')
         } catch (err) {
             console.error("Error setting document: ", err);
         }
