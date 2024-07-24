@@ -1,16 +1,17 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from '../../firebase'
+import { db, storage } from '../../firebase';
+import RatingInput from '../../contexts/Rating';
 
 const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessage }) => {
-    const [per, setPerc] = useState(null)
+    const [per, setPerc] = useState(null);
     const [kursusBaru, setKursusBaru] = useState({
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
-    })
-    const [oldFiles, setOldFiles] = useState({ image: "", avatar: "" })
+    });
+    const [oldFiles, setOldFiles] = useState({ image: "", avatar: "" });
 
     useEffect(() => {
         if (updateKelas) {
@@ -50,15 +51,15 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
     }, [kursusBaru.image, kursusBaru.avatar]);
 
     const handleChange = (e) => {
-        const { name, files, value } = e.target
+        const { name, files, value } = e.target;
         if (files) {
-            setKursusBaru({ ...kursusBaru, [name]: files[0] })
+            setKursusBaru({ ...kursusBaru, [name]: files[0] });
         } else {
-            setKursusBaru({ ...kursusBaru, [name]: value })
+            setKursusBaru({ ...kursusBaru, [name]: value });
         }
-    }
+    };
 
-    const { title, description, instructor, price, company, rating } = kursusBaru
+    const { title, description, instructor, price, company, rating } = kursusBaru;
 
     const deleteOldFile = async (url) => {
         if (url) {
@@ -77,6 +78,11 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
 
         if (typeof kursusBaru.image === 'object' || typeof kursusBaru.avatar === 'object') {
             alert('Tunggu hingga proses upload selesai');
+            return;
+        }
+
+        if (rating < 0 || rating > 5) {
+            alert('Rating harus antara 0 dan 5');
             return;
         }
 
@@ -102,7 +108,9 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
         }
         handleCloseModal();
     };
-    if (!showModal) return null
+
+    if (!showModal) return null;
+
     return (
         <>
             <div className="fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
@@ -125,7 +133,10 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 id="title"
                                 value={title}
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Judul Kursus " required />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Judul Kursus"
+                                required
+                            />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="description" className="block text-gray-700">Deskripsi Kursus</label>
@@ -135,7 +146,10 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 id="description"
                                 value={description}
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Deskripsi Kursus " required />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Deskripsi Kursus"
+                                required
+                            />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="instructor" className="block text-gray-700">Pengajar</label>
@@ -145,7 +159,10 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 id="instructor"
                                 value={instructor}
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Pengajar " required />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Pengajar"
+                                required
+                            />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="company" className="block text-gray-700">Perusahaan</label>
@@ -155,18 +172,12 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 id="company"
                                 value={company}
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Pengajar " required />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Perusahaan"
+                                required
+                            />
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="rating" className="block text-gray-700">Rating</label>
-                            <input
-                                type="text"
-                                name="rating"
-                                id="rating"
-                                value={rating}
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Rating" required />
-                        </div>
+
                         <div className="mb-4">
                             <label htmlFor="price" className="block text-gray-700">Harga</label>
                             <input
@@ -175,7 +186,10 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 id="price"
                                 value={price}
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Harga" required />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Harga"
+                                required
+                            />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="image" className="block text-gray-700">Gambar</label>
@@ -184,7 +198,9 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 name="image"
                                 id="image"
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Gambar" />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Gambar"
+                            />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="avatar" className="block text-gray-700">Foto Pengajar</label>
@@ -193,17 +209,35 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
                                 name="avatar"
                                 id="avatar"
                                 onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg" placeholder="Gambar" />
+                                className="mt-1 p-2 w-full border rounded-lg"
+                                placeholder="Foto Pengajar"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="rating" className="block text-gray-700">Rating</label>
+                            <RatingInput rating={rating} setRating={(rating) => setKursusBaru({ ...kursusBaru, rating })} />
                         </div>
                         <div className="flex justify-end gap-4">
-                            <button disabled={per !== null && per < 100} type="submit" className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-green-300">{updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}</button>
-                            <button type="button" onClick={handleCloseModal} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Tutup</button>
+                            <button
+                                disabled={per !== null && per < 100}
+                                type="submit"
+                                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-green-300"
+                            >
+                                {updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                            >
+                                Tutup
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
-export default KelolaKursus
+export default KelolaKursus;

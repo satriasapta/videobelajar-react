@@ -1,8 +1,9 @@
-import Rating from '../../contexts/Rating'
+import { Rating } from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from '../../firebase'
+
 const Content = () => {
     const [data, setData] = useState([])
 
@@ -36,30 +37,32 @@ const Content = () => {
             </div>
 
             <div className="sm:w-full sm:inline-flex sm:justify-evenly sm:items-start sm:flex-wrap">
-                {data.map((course, index) => (
-                    <div key={course.id} className="card mb-6 sm:mb-0">
-                        <div className="card-content">
-                            <img src={course.image} className='bg-cover bg-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />
-                            <div className='flex-col justify-start items-start gap-2 inline-flex'>
+                {data.map((course, index) => {
+                    return (
+                        <div key={course.id} className="card mb-6 sm:mb-0">
+                            <div className="card-content">
+                                <img src={course.image} className='bg-cover bg-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />
                                 <div className='flex-col justify-start items-start gap-2 inline-flex'>
-                                    <h5 className="self-stretch text-neutral-800 text-base font-semibold font-poppins leading-tight">{course.title}</h5>
-                                    <p className='text-zinc-400 text-xs font-dm-sans hidden sm:block'>{course.description}</p>
-                                </div>
-                                <div className='justify-start items-start gap-2 inline-flex'>
-                                    <img src={course.avatar} alt={`Avatar ${index + 1}`} className='w-9 rounded-lg' />
-                                    <div className="flex-col justify-start items-start inline-flex">
-                                        <p className="text-neutral-800 text-sm font-medium font-dm-sans leading-tight tracking-tight">{course.instructor}</p>
-                                        <p className="text-zinc-400 text-xs font-normal font-dm-sans leading-none tracking-tight pt-1">Senior Accountant in <span className='text-zinc-400 text-xs font-bold font-dm-sans leading-none'>{course.company}</span></p>
+                                    <div className='flex-col justify-start items-start gap-2 inline-flex'>
+                                        <h5 className="self-stretch text-neutral-800 text-base font-semibold font-poppins leading-tight">{course.title}</h5>
+                                        <p className='text-zinc-400 text-xs font-dm-sans hidden sm:block'>{course.description}</p>
+                                    </div>
+                                    <div className='justify-start items-start gap-2 inline-flex'>
+                                        <img src={course.avatar} alt={`Avatar ${index + 1}`} className='w-9 rounded-lg' />
+                                        <div className="flex-col justify-start items-start inline-flex">
+                                            <p className="text-neutral-800 text-sm font-medium font-dm-sans leading-tight tracking-tight">{course.instructor}</p>
+                                            <p className="text-zinc-400 text-xs font-normal font-dm-sans leading-none tracking-tight pt-1">Senior Accountant in <span className='text-zinc-400 text-xs font-bold font-dm-sans leading-none'>{course.company}</span></p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <div className="w-full justify-between items-center inline-flex">
+                                <Rating rating={course.rating} />
+                                <p className="text-green-500 text-xl font-semibold font-poppins leading-normal">{course.price}</p>
+                            </div>
                         </div>
-                        <div className="w-full justify-between items-center inline-flex">
-                            <Rating rating={course.rating} />
-                            <p className="text-green-500 text-xl font-semibold font-poppins leading-normal">{course.price}</p>
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
 
             <div className="backdrop-brightness-0 w-full h-[25rem] bg-center my-4 rounded-xl flex-col justify-center items-center gap-10 inline-flex overflow-hidden" style={{ backgroundImage: `url(${promosi})` }}>
