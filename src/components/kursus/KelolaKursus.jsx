@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from '../../firebase';
+import { db, storage } from '../../services/api/firebase';
 import RatingInput from '../../contexts/Rating';
 
 const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessage }) => {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import TambahKursus from './KelolaKursus';
 import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
-import { db, storage } from '../../firebase';
+import { db, storage } from '../../services/api/firebase';
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
@@ -10,6 +10,7 @@ const Content = () => {
     const [data, setData] = useState([]);
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
     useEffect(() => {
         const fetchCourses = onSnapshot(collection(db, "kursus"), (snapshot) => {
@@ -20,11 +21,10 @@ const Content = () => {
             setData(courses);
         }, (error) => {
             console.log(error);
-        }
-        )
+        });
         return () => {
             fetchCourses();
-        }
+        };
     }, []);
 
     const handleCloseModal = () => {
@@ -43,7 +43,7 @@ const Content = () => {
 
     const handleDelete = async (id) => {
         try {
-            const courseToDelete = data.find((course) => course.id === id)
+            const courseToDelete = data.find((course) => course.id === id);
             if (courseToDelete) {
                 const imageRef = ref(storage, courseToDelete.image);
                 const avatarRef = ref(storage, courseToDelete.avatar);
@@ -56,7 +56,7 @@ const Content = () => {
         } catch (error) {
             console.log(error);
         }
-    }
+    };
 
     const showAlertMessage = (message) => {
         setAlertMessage(message);
@@ -64,11 +64,35 @@ const Content = () => {
         setTimeout(() => {
             setShowAlert(false);
         }, 3000);
-    }
+    };
+
+    const handleSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const sortedData = [...data].sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+            return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+            return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+    });
+
+    const getArrow = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'ascending' ? '▲' : '▼';
+        }
+        return '↕';
+    };
 
     return (
         <>
-
             <div className='px-5 py-7 sm:px-16 sm:py-12'>
                 <div className="">
                     {showAlert && (
@@ -77,7 +101,6 @@ const Content = () => {
                         </div>
                     )}
                     <div className="flex justify-between items-center mb-4 mt-10">
-
                         <h1 className="text-2xl font-bold">List Kursus</h1>
                         <button
                             onClick={handleAddCourseClick}
@@ -89,7 +112,7 @@ const Content = () => {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -98,23 +121,38 @@ const Content = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Gambar
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Judul Kursus
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('title')}
+                                >
+                                    Judul Kursus {getArrow('title')}
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Deskripsi
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('description')}
+                                >
+                                    Deskripsi {getArrow('description')}
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Pengajar
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('instructor')}
+                                >
+                                    Pengajar {getArrow('instructor')}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Foto Pengajar
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Rating
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer min-w-28"
+                                    onClick={() => handleSort('rating')}
+                                >
+                                    Rating {getArrow('rating')}
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Harga
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer min-w-28"
+                                    onClick={() => handleSort('price')}
+                                >
+                                    Harga {getArrow('price')}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Action
@@ -122,7 +160,7 @@ const Content = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {data.map((course, index) => (
+                            {sortedData.map((course, index) => (
                                 <tr key={course.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{index + 1}</div>

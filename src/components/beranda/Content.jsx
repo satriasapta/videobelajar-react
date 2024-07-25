@@ -2,7 +2,7 @@ import { Rating } from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot } from 'firebase/firestore'
-import { db } from '../../firebase'
+import { db } from '../../services/api/firebase'
 
 const Content = () => {
     const [data, setData] = useState([])
@@ -41,7 +41,7 @@ const Content = () => {
                     return (
                         <div key={course.id} className="card mb-6 sm:mb-0">
                             <div className="card-content">
-                                <img src={course.image} className='bg-cover bg-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />
+                                <img src={course.image} className='object-cover object-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />
                                 <div className='flex-col justify-start items-start gap-2 inline-flex'>
                                     <div className='flex-col justify-start items-start gap-2 inline-flex'>
                                         <h5 className="self-stretch text-neutral-800 text-base font-semibold font-poppins leading-tight">{course.title}</h5>
