@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourses } from '../../store/redux/slices/courseSlice';
 import TambahKursus from './KelolaKursus';
 import { deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../services/api/firebase';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCourses } from '../../store/redux/slices/courseSlice';
 
 const Content = () => {
-    const dispatch = useDispatch();
-    const courses = useSelector((state) => state.course.data);
     const [showModal, setShowModal] = useState(false);
     const [updateKelas, setUpdateKelas] = useState(null);
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
+    const dispatch = useDispatch();
+    const { data, status } = useSelector((state) => state.course);
+
     useEffect(() => {
-        dispatch(fetchCourses());
-    }, [dispatch]);
+        if (status === 'idle') {
+            dispatch(fetchCourses());
+        }
+    }, [dispatch, status]);
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -35,7 +38,7 @@ const Content = () => {
 
     const handleDelete = async (id) => {
         try {
-            const courseToDelete = courses.find((course) => course.id === id);
+            const courseToDelete = data.find((course) => course.id === id);
             if (courseToDelete) {
                 const imageRef = ref(storage, courseToDelete.image);
                 const avatarRef = ref(storage, courseToDelete.avatar);
@@ -65,7 +68,7 @@ const Content = () => {
         setSortConfig({ key, direction });
     };
 
-    const sortedData = [...courses].sort((a, b) => {
+    const sortedData = [...data].sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
             return sortConfig.direction === 'ascending' ? -1 : 1;
         }
