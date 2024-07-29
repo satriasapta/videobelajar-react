@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import TambahKursus from './KelolaKursus';
-import { deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
-import { db, storage } from '../../services/api/firebase';
+import { storage } from '../../services/api/firebase';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourses } from '../../store/redux/slices/courseSlice';
+import { fetchCourses, deleteCourseInFirebase } from '../../store/redux/slices/courseSlice'; // import deleteCourseInFirebase
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
@@ -45,10 +44,11 @@ const Content = () => {
                 await deleteObject(imageRef);
                 await deleteObject(avatarRef);
             }
-            await deleteDoc(doc(db, "kursus", id));
+            await dispatch(deleteCourseInFirebase(id)).unwrap(); // Hapus dari Redux store
             showAlertMessage('Kursus berhasil dihapus');
         } catch (error) {
             console.log(error);
+            showAlertMessage('Gagal menghapus kursus');
         }
     };
 

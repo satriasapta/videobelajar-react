@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../services/api/firebase";
 
 export const fetchCourses = createAsyncThunk("course/fetchCourses", async () => {
@@ -15,6 +15,12 @@ export const updateCourseInFirebase = createAsyncThunk("course/updateCourseInFir
     const courseRef = doc(db, "kursus", course.id);
     await updateDoc(courseRef, course);
     return course;
+});
+
+export const deleteCourseInFirebase = createAsyncThunk("course/deleteCourseInFirebase", async (courseId) => {
+    const courseRef = doc(db, "kursus", courseId);
+    await deleteDoc(courseRef);
+    return courseId;
 });
 
 const courseSlice = createSlice({
@@ -33,6 +39,9 @@ const courseSlice = createSlice({
             if (index !== -1) {
                 state.data[index] = action.payload;
             }
+        },
+        removeCourse: (state, action) => {
+            state.data = state.data.filter(course => course.id !== action.payload);
         },
     },
     extraReducers: (builder) => {
@@ -53,10 +62,13 @@ const courseSlice = createSlice({
                 if (index !== -1) {
                     state.data[index] = action.payload;
                 }
+            })
+            .addCase(deleteCourseInFirebase.fulfilled, (state, action) => {
+                state.data = state.data.filter(course => course.id !== action.payload);
             });
     },
 });
 
-export const { addCourse, updateCourse } = courseSlice.actions;
+export const { addCourse, updateCourse, removeCourse } = courseSlice.actions;
 
 export default courseSlice.reducer;
