@@ -5,6 +5,8 @@ import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from '../../services/api/firebase';
 import RatingInput from '../../contexts/Rating';
+import { useDispatch } from "react-redux";
+import { addCourse } from "../../store/redux/slices/courseSlice";
 
 const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessage }) => {
     const [per, setPerc] = useState(null);
@@ -12,6 +14,7 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
         title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
     });
     const [oldFiles, setOldFiles] = useState({ image: "", avatar: "" });
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (updateKelas) {
@@ -102,6 +105,7 @@ const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessa
             }
 
             await setDoc(kursusRef, updatedKursus);
+            dispatch(addCourse({ ...kursusBaru, id: kursusId }));
             showAlertMessage(updateKelas ? 'Kursus Berhasil Diperbarui' : 'Kursus Berhasil Ditambahkan');
         } catch (err) {
             console.error("Error setting document: ", err);

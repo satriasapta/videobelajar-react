@@ -1,27 +1,16 @@
 import { Rating } from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
-import { useEffect, useState } from 'react'
-import { collection, onSnapshot } from 'firebase/firestore'
-import { db } from '../../services/api/firebase'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchCourses } from '../../store/redux/slices/courseSlice'
+import { useEffect } from 'react'
 
 const Content = () => {
-    const [data, setData] = useState([])
+    const dispatch = useDispatch();
+    const courses = useSelector(state => state.course.data);
 
     useEffect(() => {
-        const fetchCourses = onSnapshot(collection(db, "kursus"), (snapshot) => {
-            let courses = [];
-            snapshot.docs.forEach((doc) => {
-                courses.push({ ...doc.data(), id: doc.id });
-            });
-            setData(courses);
-        }, (error) => {
-            console.log(error);
-        }
-        )
-        return () => {
-            fetchCourses();
-        }
-    }, []);
+        dispatch(fetchCourses());
+    }, [dispatch])
 
     return (
         <div className='px-5 sm:px-16 sm:py-12'>
@@ -37,7 +26,7 @@ const Content = () => {
             </div>
 
             <div className="sm:w-full sm:inline-flex sm:justify-evenly sm:items-start sm:flex-wrap">
-                {data.map((course, index) => {
+                {courses.map((course, index) => {
                     return (
                         <div key={course.id} className="card mb-6 sm:mb-0">
                             <div className="card-content">

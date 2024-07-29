@@ -1,27 +1,16 @@
-import { createAction, createReducer, configureStore } from "@reduxjs/toolkit";
-
-const addCourse = createAction("ADD_COURSE");
-
-const courseReducer = createReducer([], (builder) => {
-    builder.addCase(addCourse, (state, action) => {
-        state.push(action.payload)
-    })
-})
+import { configureStore } from "@reduxjs/toolkit";
+import courseReducer from "./slices/courseSlice";
 
 const store = configureStore({
     reducer: {
-        course: courseReducer
-    }
-})
+        course: courseReducer,
+    },
+});
 
-console.log("one create store: ", store.getState());
+console.log("oncreate store: ", store.getState());
 
 store.subscribe(() => {
-    console.log("STORE CHANGE ", store.getState());
-})
+    console.log("Store Change: ", store.getState());
+});
 
-const action1 = addCourse({ id: 1, title: "Course 1" });
-store.dispatch(action1);
-
-
-
+export default store;

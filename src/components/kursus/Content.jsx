@@ -1,31 +1,23 @@
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCourses } from '../../store/redux/slices/courseSlice';
 import TambahKursus from './KelolaKursus';
-import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../services/api/firebase';
 
 const Content = () => {
+    const dispatch = useDispatch();
+    const courses = useSelector((state) => state.course.data);
     const [showModal, setShowModal] = useState(false);
     const [updateKelas, setUpdateKelas] = useState(null);
-    const [data, setData] = useState([]);
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
     useEffect(() => {
-        const fetchCourses = onSnapshot(collection(db, "kursus"), (snapshot) => {
-            let courses = [];
-            snapshot.docs.forEach((doc) => {
-                courses.push({ ...doc.data(), id: doc.id });
-            });
-            setData(courses);
-        }, (error) => {
-            console.log(error);
-        });
-        return () => {
-            fetchCourses();
-        };
-    }, []);
+        dispatch(fetchCourses());
+    }, [dispatch]);
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -43,7 +35,7 @@ const Content = () => {
 
     const handleDelete = async (id) => {
         try {
-            const courseToDelete = data.find((course) => course.id === id);
+            const courseToDelete = courses.find((course) => course.id === id);
             if (courseToDelete) {
                 const imageRef = ref(storage, courseToDelete.image);
                 const avatarRef = ref(storage, courseToDelete.avatar);
@@ -51,7 +43,6 @@ const Content = () => {
                 await deleteObject(avatarRef);
             }
             await deleteDoc(doc(db, "kursus", id));
-            setData(data.filter((course) => course.id !== id));
             showAlertMessage('Kursus berhasil dihapus');
         } catch (error) {
             console.log(error);
@@ -74,7 +65,7 @@ const Content = () => {
         setSortConfig({ key, direction });
     };
 
-    const sortedData = [...data].sort((a, b) => {
+    const sortedData = [...courses].sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
             return sortConfig.direction === 'ascending' ? -1 : 1;
         }
