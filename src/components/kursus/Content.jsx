@@ -3,7 +3,8 @@ import TambahKursus from './KelolaKursus';
 import { ref, deleteObject } from 'firebase/storage';
 import { storage } from '../../services/api/firebase';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourses, deleteCourseInFirebase } from '../../store/redux/slices/courseSlice'; // import deleteCourseInFirebase
+import { fetchCourses, deleteCourseInFirebase } from '../../store/redux/slices/courseSlice';
+import Pagination from './Pagination';
 
 const Content = () => {
     const [showModal, setShowModal] = useState(false);
@@ -13,6 +14,8 @@ const Content = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [courseIdToDelete, setCourseIdToDelete] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
 
     const dispatch = useDispatch();
     const { data, status } = useSelector((state) => state.course);
@@ -95,6 +98,10 @@ const Content = () => {
         return '↕';
     };
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+
     return (
         <>
             <div className='px-5 py-7 sm:px-16 sm:py-12'>
@@ -164,10 +171,10 @@ const Content = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {sortedData.map((course, index) => (
+                            {currentItems.map((course, index) => (
                                 <tr key={course.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{index + 1}</div>
+                                        <div className="text-sm text-gray-900">{indexOfFirstItem + index + 1}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap w-52">
                                         <img src={course.image} className='max-h-28 w-full object-cover object-center' alt="course"></img>
@@ -202,7 +209,15 @@ const Content = () => {
                         </tbody>
                     </table>
                 </div>
+                <Pagination
+                    totalItems={data.length}
+                    itemsPerPage={itemsPerPage}
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    setItemsPerPage={setItemsPerPage}
+                />
             </div>
+
 
             {/* Modal Konfirmasi Penghapusan */}
             {showConfirmModal && (
