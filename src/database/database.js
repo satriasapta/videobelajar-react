@@ -21,12 +21,13 @@ async function getCourseById(id) {
 }
 
 async function createCourse(title, description, instructor, price, company, rating, image, avatar) {
-    const [rows] = await pool.query(
+    const [result] = await pool.query(
         'INSERT INTO kursus (title, description, instructor, price, company, rating, image, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [title, description, instructor, price, company, rating, image, avatar]
     )
-    return rows
+    const id = result.insertId
+    return getCourseById(id)
+
 }
 
-const courses = await getCourseById(1)
-console.log(courses)
+export { getCourses, getCourseById, createCourse }
