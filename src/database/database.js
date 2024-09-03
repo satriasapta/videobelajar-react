@@ -27,7 +27,19 @@ async function createCourse(title, description, instructor, price, company, rati
     )
     const id = result.insertId
     return getCourseById(id)
-
 }
 
-export { getCourses, getCourseById, createCourse }
+async function updateCourse(id, data) {
+    const fields = Object.keys(data).map(field => `${field} = ?`).join(', ')
+    const values = Object.values(data)
+
+    await pool.query(`UPDATE kursus SET ${fields} WHERE id = ?`, [...values, id])
+    return getCourseById(id);
+}
+
+async function deleteCourse(id) {
+    await pool.query('DELETE FROM kursus WHERE id = ?', [id])
+    return { message: `Course with id ${id} deleted successfully` }
+}
+
+export { getCourses, getCourseById, createCourse, updateCourse, deleteCourse }
