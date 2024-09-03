@@ -5,37 +5,58 @@ const app = express()
 app.use(express.json())
 
 app.get("/courses", async (req, res) => {
-    const courses = await getCourses()
-    res.send(courses)
+    try {
+        const courses = await getCourses()
+        res.send(courses)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
 })
 app.get("/courses/:id", async (req, res) => {
     const id = req.params.id
-    const course = await getCourseById(id)
-    res.send(course)
+    try {
+        const course = await getCourseById(id)
+        res.send(course)
+    } catch (err) {
+        res.status(404).send(err.message)
+    }
 })
 
 app.post("/courses", async (req, res) => {
     const { title, description, instructor, price, company, rating, image, avatar } = req.body
-    const result = await createCourse(title, description, instructor, price, company, rating, image, avatar)
-    res.status(201).send(result)
+    try {
+        const result = await createCourse(title, description, instructor, price, company, rating, image, avatar)
+        res.status(201).send(result)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
 })
 
 app.put("/courses/:id", async (req, res) => {
     const id = req.params.id
     const { title, description, instructor, price, company, rating, image, avatar } = req.body
-    const result = await updateCourse(id, { title, description, instructor, price, company, rating, image, avatar })
-    res.send(result)
+    try {
+        const result = await updateCourse(id, { title, description, instructor, price, company, rating, image, avatar })
+        res.send(result)
+    } catch (err) {
+        res.status(404).send({ error: err.message })
+    }
 })
 
 app.delete("/courses/:id", async (req, res) => {
     const id = req.params.id
-    const result = await deleteCourse(id)
-    res.send(result)
+    try {
+        const result = await deleteCourse(id)
+        res.send(result)
+    }
+    catch (err) {
+        res.status(404).send(err.message)
+    }
 })
 
-app.use((err, res) => {
+app.use((err, req, res, next) => {
     console.error(err.stack)
-    res.status(500).send('Something broke!')
+    res.status(500).send({ error: 'Something broke!' })
 })
 
 

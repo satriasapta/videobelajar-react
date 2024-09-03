@@ -12,34 +12,58 @@ const pool = mysql.createPool({
 }).promise()
 
 async function getCourses() {
-    const [rows] = await pool.query('SELECT * FROM kursus')
-    return rows
+    try {
+        const [rows] = await pool.query('SELECT * FROM kursus')
+        return rows
+    } catch (err) {
+        throw new Error("Error Fetching Courses: " + err.message)
+    }
 }
 async function getCourseById(id) {
-    const [rows] = await pool.query(`SELECT * FROM kursus WHERE id = ${id}`)
-    return rows
+    try {
+        const [rows] = await pool.query(`SELECT * FROM kursus WHERE id = ${id}`)
+        return rows[0]
+    } catch (err) {
+        throw new Error("Error Fetching Course: " + err.message)
+    }
 }
 
 async function createCourse(title, description, instructor, price, company, rating, image, avatar) {
-    const [result] = await pool.query(
-        'INSERT INTO kursus (title, description, instructor, price, company, rating, image, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [title, description, instructor, price, company, rating, image, avatar]
-    )
-    const id = result.insertId
-    return getCourseById(id)
+    try {
+
+        const [result] = await pool.query(
+            'INSERT INTO kursus (title, description, instructor, price, company, rating, image, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, description, instructor, price, company, rating, image, avatar]
+        )
+        const id = result.insertId
+        return getCourseById(id)
+    } catch (err) {
+        throw new Error("Error Creating Course: " + err.message)
+    }
 }
 
 async function updateCourse(id, data) {
-    const fields = Object.keys(data).map(field => `${field} = ?`).join(', ')
-    const values = Object.values(data)
-
-    await pool.query(`UPDATE kursus SET ${fields} WHERE id = ?`, [...values, id])
-    return getCourseById(id);
+    try {
+        const fields = Object.keys(data).map(field => `${field} = ?`).join(', ')
+        const values = Object.values(data)
+        const [result] = await pool.query(`UPDATE kursus SET ${fields} WHERE id = ?`, [...values, id])
+        if (result.affectedRows === 0) {
+            throw new Error(`Course with id ${id} not found`)
+        }
+        return await getCourseById(id);
+    } catch (err) {
+        throw new Error("Error Updating Course: " + err.message)
+    }
 }
 
 async function deleteCourse(id) {
-    await pool.query('DELETE FROM kursus WHERE id = ?', [id])
-    return { message: `Course with id ${id} deleted successfully` }
+    const [result] = await pool.query('DELETE FROM kursus WHERE id = ?', [id])
+    if (result.affectedRows === 0) {
+        throw new Error(`Course with id ${id} not found`)
+    }
+    return {
+        message: `Course with id ${id} deleted successfully`
+    }
 }
 
 export { getCourses, getCourseById, createCourse, updateCourse, deleteCourse }
