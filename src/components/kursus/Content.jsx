@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import TambahKursus from './KelolaKursus';
-import { ref, deleteObject } from 'firebase/storage';
-import { storage } from '../../services/api/firebase';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourses, deleteCourseInFirebase } from '../../store/redux/slices/courseSlice';
 import Pagination from './Pagination';
 
 const Content = () => {
@@ -16,15 +13,25 @@ const Content = () => {
     const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
-
-    const dispatch = useDispatch();
-    const { data, status } = useSelector((state) => state.course);
+    const [courses, setCourses] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (status === 'idle') {
-            dispatch(fetchCourses());
+        fetchCourses();
+    }, []);
+
+    const fetchCourses = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/courses', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            setCourses(response.data);
+        } catch (error) {
+            setError(error.response ? error.response.data.message : 'Error fetching courses');
         }
-    }, [dispatch, status]);
+    };
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -47,17 +54,15 @@ const Content = () => {
 
     const handleDelete = async () => {
         try {
-            const courseToDelete = data.find((course) => course.id === courseIdToDelete);
-            if (courseToDelete) {
-                const imageRef = ref(storage, courseToDelete.image);
-                const avatarRef = ref(storage, courseToDelete.avatar);
-                await deleteObject(imageRef);
-                await deleteObject(avatarRef);
-            }
-            await dispatch(deleteCourseInFirebase(courseIdToDelete)).unwrap();
+            await axios.delete(`http://localhost:8080/courses/${courseIdToDelete}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             showAlertMessage('Kursus berhasil dihapus');
+            fetchCourses();
         } catch (error) {
-            console.log(error);
+            console.log('Error deleting course:', error);
             showAlertMessage('Gagal menghapus kursus');
         } finally {
             setShowConfirmModal(false);
@@ -81,7 +86,7 @@ const Content = () => {
         setSortConfig({ key, direction });
     };
 
-    const sortedData = [...data].sort((a, b) => {
+    const sortedData = [...courses].sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
             return sortConfig.direction === 'ascending' ? -1 : 1;
         }
@@ -150,17 +155,23 @@ const Content = () => {
                                 >
                                     Pengajar {getArrow('instructor')}
                                 </th>
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('company')}
+                                >
+                                    Perusahaan {getArrow('company')}
+                                </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Foto Pengajar
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer min-w-28"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                                     onClick={() => handleSort('rating')}
                                 >
                                     Rating {getArrow('rating')}
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer min-w-28"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                                     onClick={() => handleSort('price')}
                                 >
                                     Harga {getArrow('price')}
@@ -177,7 +188,11 @@ const Content = () => {
                                         <div className="text-sm text-gray-900">{indexOfFirstItem + index + 1}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap w-52">
-                                        <img src={course.image} className='max-h-28 w-full object-cover object-center' alt="course"></img>
+                                        <img
+                                            src={`http://localhost:8080/assets/${course.image}`}
+                                            className='max-h-28 w-full object-cover object-center'
+                                            alt="course"
+                                        />
                                     </td>
                                     <td className="px-6 py-4 min-w-40 max-w-xs break-words">
                                         <div className="text-sm text-gray-900">{course.title}</div>
@@ -189,7 +204,14 @@ const Content = () => {
                                         <div className="text-sm text-gray-900">{course.instructor}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <img src={course.avatar} className='max-h-28 w-full object-cover object-center' alt="course"></img>
+                                        <div className="text-sm text-gray-900">{course.company}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <img
+                                            src={`http://localhost:8080/assets/${course.avatar}`}
+                                            className='max-h-28 w-full object-cover object-center'
+                                            alt="avatar"
+                                        />
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{course.rating}</div>
@@ -200,71 +222,58 @@ const Content = () => {
                                     <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
                                         <button
                                             onClick={() => handleEditCourseClick(course)}
-                                            className='bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600'>Edit</button>
+                                            className='bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600'>Edit
+                                        </button>
                                         <button
-                                            onClick={() => confirmDelete(course.id)} className='bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600'>Delete</button>
+                                            onClick={() => confirmDelete(course.id)}
+                                            className='bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600'>Delete
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
+
+
                     </table>
                 </div>
                 <Pagination
-                    totalItems={data.length}
                     itemsPerPage={itemsPerPage}
+                    totalItems={courses.length}
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
-                    setItemsPerPage={setItemsPerPage}
                 />
             </div>
 
+            {showModal && (
+                <TambahKursus
+                    onClose={handleCloseModal}
+                    showAlertMessage={showAlertMessage}
+                    updateKelas={updateKelas}
+                    fetchCourses={fetchCourses}
+                />
+            )}
 
-            {/* Modal Konfirmasi Penghapusan */}
             {showConfirmModal && (
-                <div className="fixed inset-0 z-10 overflow-y-auto">
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-                        </div>
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <div className="sm:flex sm:items-start">
-                                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        <svg className="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </div>
-                                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">Konfirmasi Penghapusan</h3>
-                                        <div className="mt-2">
-                                            <p className="text-sm text-gray-500">Apakah Anda yakin ingin menghapus kursus ini? Tindakan ini tidak dapat diurungkan.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                <button
-                                    onClick={handleDelete}
-                                    type="button"
-                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                                >
-                                    Hapus
-                                </button>
-                                <button
-                                    onClick={() => setShowConfirmModal(false)}
-                                    type="button"
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                                >
-                                    Batal
-                                </button>
-                            </div>
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-md">
+                        <p>Apakah Anda yakin ingin menghapus kursus ini?</p>
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 mr-2"
+                            >
+                                Ya
+                            </button>
+                            <button
+                                onClick={() => setShowConfirmModal(false)}
+                                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                            >
+                                Tidak
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            <TambahKursus showModal={showModal} handleCloseModal={handleCloseModal} updateKelas={updateKelas} showAlertMessage={showAlertMessage} />
         </>
     );
 };

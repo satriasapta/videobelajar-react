@@ -1,16 +1,32 @@
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Rating } from '../../contexts/Rating'
 import promosi from '../../assets/promosi.jpeg'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchCourses } from '../../store/redux/slices/courseSlice'
-import { useEffect } from 'react'
 
 const Content = () => {
-    const dispatch = useDispatch();
-    const courses = useSelector(state => state.course.data);
+    const [courses, setCourses] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        dispatch(fetchCourses());
-    }, [dispatch])
+        const fetchCourses = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/courses', {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                setCourses(response.data);
+            } catch (error) {
+                setError(error.response ? error.response.data.message : 'Error fetching courses');
+            }
+        };
+
+        fetchCourses();
+    }, []);
+
+    if (error) {
+        return <div className="text-red-500">{error}</div>;
+    }
 
     return (
         <div className='px-5 sm:px-16 sm:py-12'>
@@ -30,14 +46,14 @@ const Content = () => {
                     return (
                         <div key={course.id} className="card mb-6 sm:mb-0">
                             <div className="card-content">
-                                <img src={course.image} className='object-cover object-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />
+                                <img src={`http://localhost:8080/assets/${course.image}`} className='object-cover object-center w-24 h-24 sm:w-full sm:h-48 rounded-xl sm:overflow-hidden sm:mb-2' alt={`Content ${index + 1}`} />
                                 <div className='flex-col justify-start items-start gap-2 inline-flex'>
                                     <div className='flex-col justify-start items-start gap-2 inline-flex'>
                                         <h5 className="self-stretch text-neutral-800 text-base font-semibold font-poppins leading-tight">{course.title}</h5>
                                         <p className='text-zinc-400 text-xs font-dm-sans hidden sm:block'>{course.description}</p>
                                     </div>
                                     <div className='justify-start items-start gap-2 inline-flex'>
-                                        <img src={course.avatar} alt={`Avatar ${index + 1}`} className='w-9 rounded-lg' />
+                                        <img src={`http://localhost:8080/assets/${course.avatar}`} alt={`Avatar ${index + 1}`} className='w-9 rounded-lg' />
                                         <div className="flex-col justify-start items-start inline-flex">
                                             <p className="text-neutral-800 text-sm font-medium font-dm-sans leading-tight tracking-tight">{course.instructor}</p>
                                             <p className="text-zinc-400 text-xs font-normal font-dm-sans leading-none tracking-tight pt-1">Senior Accountant in <span className='text-zinc-400 text-xs font-bold font-dm-sans leading-none'>{course.company}</span></p>
@@ -71,4 +87,4 @@ const Content = () => {
     );
 }
 
-export default Content
+export default Content;

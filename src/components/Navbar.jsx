@@ -33,15 +33,18 @@ const Navbar = ({ isLoggedIn }) => {
 
     const handleMenuClick = (item) => {
         if (item === "Logout") {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
             navigate("/login");
         }
     };
     const klikKursus = () => {
         navigate("/kursus");
-    }
+    };
+
     const klikLogo = () => {
-        navigate("/")
-    }
+        navigate("/");
+    };
 
     return (
         <nav className='w-full flex items-center h-[4.5rem] justify-between shadow border-t border-b border-zinc-100 bg-white fixed z-20'>

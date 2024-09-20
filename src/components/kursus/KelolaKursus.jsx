@@ -1,250 +1,193 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
-import { doc, setDoc } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from '../../services/api/firebase';
-import RatingInput from '../../contexts/Rating';
-import { useDispatch } from "react-redux";
-import { addCourse, updateCourse, updateCourseInFirebase } from "../../store/redux/slices/courseSlice";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const KelolaKursus = ({ showModal, handleCloseModal, updateKelas, showAlertMessage }) => {
-    const [per, setPerc] = useState(null);
-    const [kursusBaru, setKursusBaru] = useState({
-        title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
-    });
-    const [oldFiles, setOldFiles] = useState({ image: "", avatar: "" });
-    const dispatch = useDispatch();
+const KelolaKursus = ({ onClose, showAlertMessage, updateKelas, fetchCourses }) => {
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [instructor, setInstructor] = useState('');
+    const [company, setCompany] = useState('');
+    const [rating, setRating] = useState('');
+    const [price, setPrice] = useState('');
+    const [image, setImage] = useState('');
+    const [avatar, setAvatar] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         if (updateKelas) {
-            setKursusBaru(updateKelas);
-            setOldFiles({ image: updateKelas.image, avatar: updateKelas.avatar });
-        } else {
-            setKursusBaru({
-                title: "", description: "", instructor: "", price: "", company: "", rating: 0, image: "", avatar: ""
-            });
-            setOldFiles({ image: "", avatar: "" });
+            setTitle(updateKelas.title);
+            setDescription(updateKelas.description);
+            setInstructor(updateKelas.instructor);
+            setCompany(updateKelas.company);
+            setRating(updateKelas.rating);
+            setPrice(updateKelas.price);
+            setImage(updateKelas.image);
+            setAvatar(updateKelas.avatar);
+            setIsEditing(true);
         }
     }, [updateKelas]);
-
-    useEffect(() => {
-        const uploadFile = (file, field) => {
-            const fileName = new Date().getTime() + file.name;
-            const storageRef = ref(storage, fileName);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-            uploadTask.on('state_changed', (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload ${field} is ${progress}% done`);
-                setPerc(progress);
-            }, (error) => {
-                console.error(`Error uploading ${field}:`, error);
-            }, () => {
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    setKursusBaru((prev) => ({ ...prev, [field]: downloadURL }));
-                });
-            });
-        };
-        if (kursusBaru.image && typeof kursusBaru.image !== 'string') {
-            uploadFile(kursusBaru.image, 'image');
-        }
-        if (kursusBaru.avatar && typeof kursusBaru.avatar !== 'string') {
-            uploadFile(kursusBaru.avatar, 'avatar');
-        }
-    }, [kursusBaru.image, kursusBaru.avatar]);
-
-    const handleChange = (e) => {
-        const { name, files, value } = e.target;
-        if (files) {
-            setKursusBaru({ ...kursusBaru, [name]: files[0] });
-        } else {
-            setKursusBaru({ ...kursusBaru, [name]: value });
-        }
-    };
-
-    const { title, description, instructor, price, company, rating } = kursusBaru;
-
-    const deleteOldFile = async (url) => {
-        if (url) {
-            const storageRef = ref(storage, url);
-            try {
-                await deleteObject(storageRef);
-                console.log(`File ${url} deleted successfully`);
-            } catch (error) {
-                console.error(`Error deleting file ${url}:`, error);
-            }
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (typeof kursusBaru.image === 'object' || typeof kursusBaru.avatar === 'object') {
-            alert('Tunggu hingga proses upload selesai');
-            return;
-        }
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('instructor', instructor);
+        formData.append('company', company);
+        formData.append('rating', rating);
+        formData.append('price', price);
 
-        if (rating < 0 || rating > 5) {
-            alert('Rating harus antara 0 dan 5');
-            return;
-        }
+        if (image) formData.append('image', image);
+        if (avatar) formData.append('avatar', avatar);
 
         try {
-            const kursusId = updateKelas ? updateKelas.id : uuidv4();
-            const kursusRef = doc(db, "kursus", kursusId);
-
-            let updatedKursus = { ...kursusBaru };
-
-            if (updateKelas) {
-                if (kursusBaru.image !== oldFiles.image) {
-                    await deleteOldFile(oldFiles.image);
-                }
-                if (kursusBaru.avatar !== oldFiles.avatar) {
-                    await deleteOldFile(oldFiles.avatar);
-                }
-            }
-
-            await setDoc(kursusRef, updatedKursus);
-            if (updateKelas) {
-                dispatch(updateCourseInFirebase({ ...kursusBaru, id: kursusId }));
+            let response;
+            if (isEditing) {
+                response = await axios.put(`http://localhost:8080/courses/${updateKelas.id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    },
+                });
+                showAlertMessage('Kursus berhasil diperbarui');
             } else {
-                dispatch(addCourse({ ...kursusBaru, id: kursusId }));
+                response = await axios.post('http://localhost:8080/courses', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    },
+                });
+                showAlertMessage('Kursus berhasil ditambahkan');
             }
-            showAlertMessage(updateKelas ? 'Kursus Berhasil Diperbarui' : 'Kursus Berhasil Ditambahkan');
-        } catch (err) {
-            console.error("Error setting document: ", err);
+        } catch (error) {
+            console.error('Error submitting course:', error.response?.data || error.message);
         }
-        handleCloseModal();
+        onClose();
     };
 
-    if (!showModal) return null;
+
+
+    const handleCancel = () => {
+        onClose();
+    };
 
     return (
-        <>
-            <div className="fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
-                <div className="bg-white rounded-lg shadow-lg w-11/12 max-h-screen md:w-2/3 lg:w-1/2 overflow-y-auto">
-                    <div className="flex justify-between items-center border-b p-4">
-                        <h5 className="text-xl font-medium">{updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}</h5>
-                        <button className="text-black" onClick={handleCloseModal}>
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
+        <div className="fixed top-0 left-0 bottom-0 right-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-md w-full max-w-lg mt-12 max-h-[90vh] overflow-y-auto">
+                <h2 className="text-2xl font-bold mb-4">
+                    {isEditing ? 'Edit Kursus' : 'Tambah Kursus'}
+                </h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Judul Kursus
+                        </label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Deskripsi
+                        </label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Pengajar
+                        </label>
+                        <input
+                            type="text"
+                            value={instructor}
+                            onChange={(e) => setInstructor(e.target.value)}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Perusahaan</label>
+                        <input
+                            type="text"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Rating
+                        </label>
+                        <input
+                            type="number"
+                            value={rating}
+                            onChange={(e) => setRating(e.target.value)}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Harga
+                        </label>
+                        <input
+                            type="text"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Gambar Kursus (File)
+                        </label>
+                        <input
+                            type="file"
+                            onChange={(e) => setImage(e.target.files[0])}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Avatar Pengajar (File)
+                        </label>
+                        <input
+                            type="file"
+                            onChange={(e) => setAvatar(e.target.files[0])}
+                            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+
+                        />
+                    </div>
+                    <div className="flex justify-end">
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                        >
+                            {isEditing ? 'Perbarui Kursus' : 'Tambahkan Kursus'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                        >
+                            Batal
                         </button>
                     </div>
-
-                    <form onSubmit={handleSubmit} className="p-4">
-                        <div className="mb-4">
-                            <label htmlFor="title" className="block text-gray-700">Judul Kursus</label>
-                            <input
-                                type="text"
-                                name="title"
-                                id="title"
-                                value={title}
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Judul Kursus"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="description" className="block text-gray-700">Deskripsi Kursus</label>
-                            <input
-                                type="text"
-                                name="description"
-                                id="description"
-                                value={description}
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Deskripsi Kursus"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="instructor" className="block text-gray-700">Pengajar</label>
-                            <input
-                                type="text"
-                                name="instructor"
-                                id="instructor"
-                                value={instructor}
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Pengajar"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="company" className="block text-gray-700">Perusahaan</label>
-                            <input
-                                type="text"
-                                name="company"
-                                id="company"
-                                value={company}
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Perusahaan"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label htmlFor="price" className="block text-gray-700">Harga</label>
-                            <input
-                                type="text"
-                                name="price"
-                                id="price"
-                                value={price}
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Harga"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="image" className="block text-gray-700">Gambar</label>
-                            <input
-                                type="file"
-                                name="image"
-                                id="image"
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Gambar"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="avatar" className="block text-gray-700">Foto Pengajar</label>
-                            <input
-                                type="file"
-                                name="avatar"
-                                id="avatar"
-                                onChange={handleChange}
-                                className="mt-1 p-2 w-full border rounded-lg"
-                                placeholder="Foto Pengajar"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="rating" className="block text-gray-700">Rating</label>
-                            <RatingInput rating={rating} setRating={(rating) => setKursusBaru({ ...kursusBaru, rating })} />
-                        </div>
-                        <div className="flex justify-end gap-4">
-                            <button
-                                disabled={per !== null && per < 100}
-                                type="submit"
-                                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-green-300"
-                            >
-                                {updateKelas ? 'Edit Kursus' : 'Tambah Kursus'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCloseModal}
-                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                            >
-                                Tutup
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                </form>
             </div>
-        </>
+        </div>
     );
 };
 
