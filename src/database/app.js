@@ -91,8 +91,25 @@ app.post('/login', async (req, res) => {
 });
 
 app.get("/courses", verifyToken, async (req, res) => {
+    const { company, sortBy, order, search, instructor } = req.query;
+
+    let query = 'SELECT * FROM kursus WHERE 1=1';
+    if (company) {
+        query += ` AND company = ${pool.escape(company)}`;
+    }
+    if (instructor) {
+        query += ` AND instructor LIKE ${pool.escape('%' + instructor + '%')}`;
+    }
+    if (search) {
+        query += ` AND (title LIKE ${pool.escape('%' + search + '%')} OR description LIKE ${pool.escape('%' + search + '%')})`;
+    }
+    if (sortBy) {
+        const orderBy = sortBy === 'price' || sortBy === 'rating' ? sortBy : 'id';
+        const sortOrder = order === 'desc' ? 'DESC' : 'ASC';
+        query += ` ORDER BY ${orderBy} ${sortOrder}`;
+    }
     try {
-        const courses = await getCourses();
+        const [courses] = await pool.query(query);
         res.send(courses);
     } catch (err) {
         res.status(500).send(err.message);
