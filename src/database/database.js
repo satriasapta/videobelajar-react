@@ -12,7 +12,7 @@ const pool = mysql.createPool({
     password: process.env.MYSQL_PASSWORD,
 }).promise()
 
-async function createUser(fullname, username, password, email) {
+async function createUser(fullname, username, password, email, phone) {
     try {
         const [existingUser] = await pool.query('SELECT * FROM user WHERE email = ?', [email]);
 
@@ -24,8 +24,8 @@ async function createUser(fullname, username, password, email) {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const [result] = await pool.query(
-            'INSERT INTO user (fullname, username, password, email) VALUES (?, ?, ?, ?)',
-            [fullname, username, hashedPassword, email]
+            'INSERT INTO user (fullname, username, password, email, phone) VALUES (?, ?, ?, ?, ?)',
+            [fullname, username, hashedPassword, email, phone]
         );
 
         const id = result.insertId;

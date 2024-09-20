@@ -1,16 +1,58 @@
-import express from 'express'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
-import { getCourses, getCourseById, createCourse, updateCourse, deleteCourse, createUser, getUserByEmail } from './database.js'
-import { verifyToken } from './authMiddleware.js'
-const app = express()
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import path from 'path';
+import fs from 'fs';
+import {
+    getCourses,
+    getCourseById,
+    createCourse,
+    updateCourse,
+    deleteCourse,
+    createUser,
+    getUserByEmail
+} from './database.js';
+import { verifyToken } from './authMiddleware.js';
 
-app.use(express.json())
+const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
+
+const ensureDirectoryExistence = (dirPath) => {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+};
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = join(__dirname, 'src/assets');
+        ensureDirectoryExistence(uploadPath); // Ensure directory exists
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname)); // Unique filename
+    }
+});
+const upload = multer({ storage: storage });
+
+app.use(express.json());
 
 app.post("/register", async (req, res) => {
-    const { fullname, username, password, email } = req.body;
+    const { fullname, username, password, email, phone } = req.body;
     try {
-        const newUser = await createUser(fullname, username, password, email);
+        const newUser = await createUser(fullname, username, password, email, phone);
         res.status(201).send({ message: "User registered successfully!", user: newUser });
     } catch (error) {
         res.status(500).send(error.message);
@@ -27,16 +69,12 @@ app.post('/login', async (req, res) => {
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        // console.log("Hashed Password in DB:", user.password);
-        // console.log("Password entered:", password);
-        // console.log("Password match result:", isMatch);
         if (!isMatch) {
             return res.status(401).send({ error: 'Invalid email or password' });
         }
 
         const token = jwt.sign(
             { id: user.id, email: user.email },
-            // eslint-disable-next-line no-undef
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -52,60 +90,92 @@ app.post('/login', async (req, res) => {
 
 app.get("/courses", verifyToken, async (req, res) => {
     try {
-        const courses = await getCourses()
-        res.send(courses)
+        const courses = await getCourses();
+        res.send(courses);
     } catch (err) {
-        res.status(500).send(err.message)
+        res.status(500).send(err.message);
     }
-})
+});
+
 app.get("/courses/:id", verifyToken, async (req, res) => {
-    const id = req.params.id
+    const id = req.params.id;
     try {
-        const course = await getCourseById(id)
-        res.send(course)
+        const course = await getCourseById(id);
+        res.send(course);
     } catch (err) {
-        res.status(404).send(err.message)
+        res.status(404).send(err.message);
     }
-})
+});
 
-app.post("/courses", verifyToken, async (req, res) => {
-    const { title, description, instructor, price, company, rating, image, avatar } = req.body
-    try {
-        const result = await createCourse(title, description, instructor, price, company, rating, image, avatar)
-        res.status(201).send(result)
-    } catch (err) {
-        res.status(500).send(err.message)
-    }
-})
+app.post("/courses", verifyToken, upload.fields([{ name: 'image' }, { name: 'avatar' }]), async (req, res) => {
+    const { title, description, instructor, price, company, rating } = req.body;
+    const image = req.files['image'] ? req.files['image'][0].filename : null;
+    const avatar = req.files['avatar'] ? req.files['avatar'][0].filename : null;
 
-app.put("/courses/:id", verifyToken, async (req, res) => {
-    const id = req.params.id
-    const { title, description, instructor, price, company, rating, image, avatar } = req.body
     try {
-        const result = await updateCourse(id, { title, description, instructor, price, company, rating, image, avatar })
-        res.send(result)
+        const result = await createCourse(title, description, instructor, price, company, rating, image, avatar);
+        res.status(201).send(result);
     } catch (err) {
-        res.status(404).send({ error: err.message })
+        console.error('Error during course creation:', err);
+        res.status(500).send({ error: err.message });
     }
-})
+});
+
+app.put("/courses/:id", verifyToken, upload.fields([{ name: 'image' }, { name: 'avatar' }]), async (req, res) => {
+    const id = req.params.id;
+    const { title, description, instructor, price, company, rating } = req.body;
+
+    const existingCourse = await getCourseById(id);
+    if (!existingCourse) {
+        return res.status(404).send({ error: "Course not found" });
+    }
+
+    const image = req.files['image'] ? req.files['image'][0].filename : existingCourse.image;
+    const avatar = req.files['avatar'] ? req.files['avatar'][0].filename : existingCourse.avatar;
+
+    try {
+        const result = await updateCourse(id, { title, description, instructor, price, company, rating, image, avatar });
+        res.send(result);
+    } catch (err) {
+        res.status(404).send({ error: err.message });
+    }
+});
+
 
 app.delete("/courses/:id", verifyToken, async (req, res) => {
-    const id = req.params.id
+    const id = req.params.id;
     try {
-        const result = await deleteCourse(id)
-        res.send(result)
+        const course = await getCourseById(id);
+        if (!course) {
+            return res.status(404).send({ message: "Course not found" });
+        }
+
+        const assetsPath = path.join(__dirname, 'src/assets');
+
+        if (course.image) {
+            const imagePath = path.join(assetsPath, course.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+        if (course.avatar) {
+            const avatarPath = path.join(assetsPath, course.avatar);
+            if (fs.existsSync(avatarPath)) {
+                fs.unlinkSync(avatarPath);
+            }
+        }
+        const result = await deleteCourse(id);
+        res.send(result);
+    } catch (err) {
+        console.error("Error deleting course:", err.message);
+        res.status(500).send({ error: err.message });
     }
-    catch (err) {
-        res.status(404).send(err.message)
-    }
-})
-
-app.use((err, req, res) => {
-    console.error(err.stack)
-    res.status(500).send({ error: 'Something broke!' })
-})
+});
 
 
+app.use('/assets', express.static(path.join(__dirname, 'src/assets')));
 
-
-app.listen(8080, () => console.log('Server is running on port 8080'))
+app.use((err, req, res, next) => {
+    res.status(500).send({ error: err.message });
+});
+app.listen(8080, () => console.log('Server is running on port 8080'));

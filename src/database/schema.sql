@@ -15,5 +15,5 @@ CREATE TABLE kursus (
 );
 
 INSERT INTO kursus (title, description, instructor, company, price, rating, image, avatar) VALUES
-('Big 4 Auditor Financial Analyst', 'Mulai transformasi dengan instruktur profesional, harga yang terjangkau, dan kurikulum terbaik', 'Jenna Ortega', 'Gojek', 'Rp 300K', 3.5, 'content1', 'avatar1'),
-('Big 4 Auditor Financial Analyst', 'Mulai transformasi dengan instruktur profesional, harga yang terjangkau, dan kurikulum terbaik', 'Jenna Ortega', 'Gojek', 'Rp 300K', 3.5, 'content2', 'avatar2'),
+('Big 4 Auditor Financial Analyst', 'Mulai transformasi dengan instruktur profesional, harga yang terjangkau, dan kurikulum terbaik', 'Jenna Ortega', 'Gojek', 'Rp 300K', 3.5, 'c1.jpeg', 'a1.png'),
+('Big 4 Auditor Financial Analyst', 'Mulai transformasi dengan instruktur profesional, harga yang terjangkau, dan kurikulum terbaik', 'Jenna Ortega', 'Gojek', 'Rp 300K', 3.5, 'c2.jpeg', 'a2.png'),
