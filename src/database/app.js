@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
@@ -17,6 +18,7 @@ import {
     getUserByEmail
 } from './database.js';
 import { verifyToken } from './authMiddleware.js';
+import { pool } from './database.js';
 
 const app = express();
 
@@ -172,6 +174,22 @@ app.delete("/courses/:id", verifyToken, async (req, res) => {
     }
 });
 
+app.get('/verifikasi-email', async (req, res) => {
+    const { token } = req.query;
+
+    try {
+        const [user] = await pool.query('SELECT * FROM user WHERE verification_token = ?', [token]);
+
+        if (user.length === 0) {
+            return res.status(400).send({ message: "Invalid Verification Token" });
+        }
+        await pool.query('UPDATE user SET verification_token = NULL WHERE id = ?', [user[0].id]);
+
+        res.send({ message: "Email Verified Successfully" });
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+});
 
 app.use('/assets', express.static(path.join(__dirname, 'src/assets')));
 

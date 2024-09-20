@@ -2,6 +2,8 @@
 import mysql from 'mysql2'
 import dotenv from 'dotenv'
 import bcrypt from 'bcryptjs'
+import { v4 as uuidv4 } from 'uuid';
+import nodemailer from 'nodemailer'
 
 dotenv.config()
 
@@ -22,17 +24,40 @@ async function createUser(fullname, username, password, email, phone) {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
+        const verificationToken = uuidv4();
         const [result] = await pool.query(
-            'INSERT INTO user (fullname, username, password, email, phone) VALUES (?, ?, ?, ?, ?)',
-            [fullname, username, hashedPassword, email, phone]
+            'INSERT INTO user (fullname, username, password, email, phone, verification_token) VALUES (?, ?, ?, ?, ?, ?)',
+            [fullname, username, hashedPassword, email, phone, verificationToken]
         );
-
         const id = result.insertId;
-        return getUserById(id);
+        const newUser = await getUserById(id);
+        await sendVerificationEmail(email, verificationToken);
+
+        return newUser;
     } catch (err) {
+
         throw new Error("Error Creating User: " + err.message);
     }
+}
+async function sendVerificationEmail(toEmail, token) {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD
+        }
+    });
+
+    const verificationLink = `http://localhost:8080/verifikasi-email?token=${token}`;
+
+    const mailOptions = {
+        from: '"EduCourse" <satriasapta77@gmail.com>',
+        to: toEmail,
+        subject: 'Email Verification',
+        html: `<h3>Please verify your email</h3><p>Click the link below to verify your email address:</p><a href="${verificationLink}">Verify Email</a>`
+    };
+
+    await transporter.sendMail(mailOptions);
 }
 
 async function getUserById(id) {
@@ -108,4 +133,4 @@ async function deleteCourse(id) {
     }
 }
 
-export { getCourses, getCourseById, createCourse, updateCourse, deleteCourse, createUser, getUserById, getUserByEmail }
+export { pool, getCourses, getCourseById, createCourse, updateCourse, deleteCourse, createUser, getUserById, getUserByEmail }
